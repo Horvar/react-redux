@@ -3,11 +3,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface SearchState {
   searchTerm: string;
   itemsPerPage: number;
+  currentPage: number;
 }
 
 const initialState: SearchState = {
   searchTerm: '',
   itemsPerPage: 10,
+  currentPage: 1,
 };
 
 export const searchSlice = createSlice({
@@ -20,9 +22,14 @@ export const searchSlice = createSlice({
     setItemsPerPage: (state, action: PayloadAction<number>) => {
       state.itemsPerPage = action.payload;
     },
+    setCurrentPage: (state, action) => {
+      state.currentPage = action.payload;
+    },
   },
 });
 
 export const { setSearchTerm, setItemsPerPage } = searchSlice.actions;
+
+export const { setCurrentPage } = searchSlice.actions;
 
 export default searchSlice.reducer;

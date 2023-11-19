@@ -5,7 +5,8 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: 'https://swapi.dev/api/' }),
   endpoints: (builder) => ({
     fetchPeople: builder.query({
-      query: (searchTerm) => `people/?search=${searchTerm}`,
+      query: ({ searchTerm, page }) =>
+        `people/?search=${searchTerm}&page=${page}`,
     }),
   }),
 });
