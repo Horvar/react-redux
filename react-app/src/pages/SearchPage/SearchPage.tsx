@@ -2,7 +2,11 @@ import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useFetchPeopleQuery } from '../../features/api/apiSlice';
-import { setSearchTerm } from '../../features/search/searchSlice';
+import {
+  setSearchTerm,
+  setCurrentPage,
+} from '../../features/search/searchSlice';
+import { setMainPageLoading } from '../../features/loading/loadingSlice';
 import styles from './SearchPage.module.css';
 import SearchBar from '../../components/SearchBar';
 import Results from '../../components/Results';
@@ -10,7 +14,6 @@ import Pagination from '../../components/Pagination';
 import { Person } from '../../types';
 import { RootState } from '../../store';
 import { Outlet } from 'react-router-dom';
-import { setCurrentPage } from '../../features/search/searchSlice';
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +30,10 @@ const SearchPage: React.FC = () => {
   });
 
   useEffect(() => {
+    dispatch(setMainPageLoading(isLoading));
+
+    console.log(isLoading);
+
     const urlSearchTerm = searchParams.get('search') || '';
     const page = parseInt(searchParams.get('page') || '1', 10);
 
@@ -36,7 +43,7 @@ const SearchPage: React.FC = () => {
     if (page !== currentPage) {
       dispatch(setCurrentPage(page));
     }
-  }, [searchParams, searchTerm, currentPage, dispatch]);
+  }, [searchParams, searchTerm, currentPage, dispatch, isLoading]);
 
   const handleSearch = (term: string) => {
     dispatch(setSearchTerm(term));

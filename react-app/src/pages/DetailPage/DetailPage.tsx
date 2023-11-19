@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setDetailsPageLoading } from '../../features/loading/loadingSlice';
+import { RootState } from '../../store';
 import styles from './DetailPage.module.css';
-import { useNavigate } from 'react-router-dom';
 
 import { Person } from '../../types';
 
 const DetailPage = () => {
   const { detailsId } = useParams();
-  const [person, setPerson] = useState<Person | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const isLoading = useSelector(
+    (state: RootState) => state.loading.detailsPageLoading
+  );
 
   const closeDetails = () => {
     navigate(-1);
@@ -18,7 +22,8 @@ const DetailPage = () => {
 
   useEffect(() => {
     const fetchDetails = async () => {
-      setIsLoading(true);
+      dispatch(setDetailsPageLoading(true));
+
       try {
         const response = await fetch(
           `https://swapi.dev/api/people/${detailsId}`
@@ -28,11 +33,14 @@ const DetailPage = () => {
       } catch (error) {
         console.error('Error fetching details:', error);
       }
-      setIsLoading(false);
+
+      dispatch(setDetailsPageLoading(false));
     };
 
     fetchDetails();
-  }, [detailsId]);
+  }, [detailsId, dispatch]);
+
+  const [person, setPerson] = useState<Person | null>(null);
 
   if (isLoading) {
     return (
