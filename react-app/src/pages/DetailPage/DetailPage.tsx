@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useOutletContext } from 'react-router-dom';
 import styles from './DetailPage.module.css';
+import { useNavigate } from 'react-router-dom';
 
 import { Person } from '../../types';
-
-interface OutletContextType {
-  closeDetails: () => void;
-}
 
 const DetailPage = () => {
   const { detailsId } = useParams();
   const [person, setPerson] = useState<Person | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { closeDetails } = useOutletContext<OutletContextType>();
+
+  const navigate = useNavigate();
+
+  const closeDetails = () => {
+    navigate(-1);
+  };
 
   useEffect(() => {
     const fetchDetails = async () => {

@@ -12,6 +12,7 @@ import Results from '../../components/Results';
 import Pagination from '../../components/Pagination';
 import { Person } from '../../types';
 import { RootState } from '../../store';
+import { Outlet } from 'react-router-dom';
 
 const SearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -74,6 +75,8 @@ const SearchPage: React.FC = () => {
           />
         </div>
       </div>
+
+      <Outlet />
     </>
   );
 };
