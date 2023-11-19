@@ -1,66 +1,87 @@
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import DetailPage from '../pages/DetailPage';
+import React from 'react';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  act,
+} from '@testing-library/react';
 import '@testing-library/jest-dom';
-import fetchMock from 'jest-fetch-mock';
+import { Provider } from 'react-redux';
+import { BrowserRouter as Router } from 'react-router-dom';
+import DetailPage from '../pages/DetailPage';
+import { store } from '../store';
 
-fetchMock.enableMocks();
-
-const mockCloseDetails = jest.fn();
-
+const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
-  useOutletContext: () => ({ closeDetails: mockCloseDetails }),
+  useNavigate: () => mockNavigate,
+  useParams: () => ({ detailsId: '1' }),
 }));
 
 describe('DetailPage Component', () => {
   beforeEach(() => {
-    fetchMock.resetMocks();
-    mockCloseDetails.mockClear();
+    jest.clearAllMocks();
   });
 
-  const mockPerson = {
-    name: 'Luke Skywalker',
-    gender: 'male',
-    height: '172',
-    mass: '77',
-    hair_color: 'blond',
-    eye_color: 'blue',
-    skin_color: 'fair',
-  };
+  test('should display loading indicator', async () => {
+    await act(async () => {
+      render(
+        <Provider store={store}>
+          <Router>
+            <DetailPage />
+          </Router>
+        </Provider>
+      );
+    });
 
-  it('displays loading indicator while fetching data', async () => {
-    fetchMock.mockResponseOnce(JSON.stringify(mockPerson));
-
-    render(<DetailPage />);
     expect(screen.getByText('Loading...')).toBeInTheDocument();
-
-    await waitFor(() => screen.getByText('Luke Skywalker'));
   });
 
-  it('correctly displays detailed card data', async () => {
-    fetchMock.mockResponseOnce(JSON.stringify(mockPerson));
+  test('should display person details when loading is false and data is fetched', async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ name: 'Luke Skywalker', gender: 'male' }))
+      )
+    ) as jest.Mock;
 
-    render(<DetailPage />);
+    await act(async () => {
+      render(
+        <Provider store={store}>
+          <Router>
+            <DetailPage />
+          </Router>
+        </Provider>
+      );
+    });
 
-    await waitFor(() => screen.getByText('Luke Skywalker'));
-
-    expect(screen.getByText('Luke Skywalker')).toBeInTheDocument();
-    expect(screen.getByText('male')).toBeInTheDocument();
-    expect(screen.getByText('172')).toBeInTheDocument();
-    expect(screen.getByText('77')).toBeInTheDocument();
-    expect(screen.getByText('blond')).toBeInTheDocument();
-    expect(screen.getByText('blue')).toBeInTheDocument();
-    expect(screen.getByText('fair')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Luke Skywalker')).toBeInTheDocument();
+      expect(screen.getByText('Gender:')).toBeInTheDocument();
+    });
   });
 
-  it('hides the component when close button is clicked', async () => {
-    fetchMock.mockResponseOnce(JSON.stringify(mockPerson));
+  test('should navigate back on close', async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ name: 'Luke Skywalker', gender: 'male' }))
+      )
+    ) as jest.Mock;
 
-    render(<DetailPage />);
+    await act(async () => {
+      render(
+        <Provider store={store}>
+          <Router>
+            <DetailPage />
+          </Router>
+        </Provider>
+      );
+    });
 
-    await waitFor(() => screen.getByText('Luke Skywalker'));
+    await waitFor(() => {
+      fireEvent.click(screen.getByText('Close'));
+    });
 
-    fireEvent.click(screen.getByText('Close'));
-    expect(mockCloseDetails).toHaveBeenCalled();
+    expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
 });

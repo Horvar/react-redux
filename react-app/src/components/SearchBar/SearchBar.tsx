@@ -18,6 +18,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
       <input
         className={styles.searchBarInput}
         type="text"
+        placeholder="Search"
         value={localSearchTerm}
         onChange={(e) => setLocalSearchTerm(e.target.value)}
       />

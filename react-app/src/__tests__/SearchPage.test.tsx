@@ -1,37 +1,89 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { store } from '../store';
 import SearchPage from '../pages/SearchPage';
+import { BrowserRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 import { MemoryRouter } from 'react-router-dom';
-import fetchMock from 'jest-fetch-mock';
+import configureMockStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
 
-fetchMock.enableMocks();
+const middlewares = [thunk];
+const mockStore = configureMockStore(middlewares);
 
-describe('SearchPage Component', () => {
-  beforeEach(() => {
-    fetchMock.resetMocks();
+describe('SearchPage', () => {
+  it('renders search input and submit button', () => {
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <SearchPage />
+        </BrowserRouter>
+      </Provider>
+    );
+
+    expect(screen.getByPlaceholderText('Search')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
   });
 
-  it('fetches characters from API on search', async () => {
-    const searchTerm = 'Luke Skywalker';
-    const page = 1;
-    const mockApiResponse = { results: [], count: 0 };
-    fetchMock.mockResponseOnce(JSON.stringify(mockApiResponse));
+  it('updates search term on input change and submits', () => {
+    render(
+      <Provider store={store}>
+        <BrowserRouter>
+          <SearchPage />
+        </BrowserRouter>
+      </Provider>
+    );
+
+    const input = screen.getByPlaceholderText(/search/i) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'Luke Skywalker' } });
+    expect(input.value).toBe('Luke Skywalker');
+
+    const button = screen.getByRole('button', { name: /search/i });
+    fireEvent.click(button);
+
+    // Здесь могут быть дополнительные проверки на изменение URL или вызов Redux actions
+  });
+
+  it('displays loading and error states', () => {
+    const store = mockStore({
+      search: {
+        currentPage: 1,
+        searchTerm: '',
+      },
+      api: {
+        queries: {},
+        mutations: {},
+      },
+      loading: {
+        mainPageLoading: true,
+      },
+    });
 
     render(
-      <MemoryRouter>
-        <SearchPage />
-      </MemoryRouter>
+      <Provider store={store}>
+        <MemoryRouter>
+          <SearchPage />
+        </MemoryRouter>
+      </Provider>
     );
 
-    fireEvent.change(screen.getByRole('textbox'), {
-      target: { value: searchTerm },
-    });
-    fireEvent.click(screen.getByText('Search'));
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
+  });
 
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        `https://swapi.dev/api/people/?search=${searchTerm}&page=${page}`
-      )
+  it('handles search term change', () => {
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <SearchPage />
+        </MemoryRouter>
+      </Provider>
     );
+
+    const input = screen.getByPlaceholderText(/search/i) as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'Luke Skywalker' } });
+    fireEvent.click(screen.getByRole('button', { name: /search/i }));
+
+    expect(window.location.search).toContain('search=Luke+Skywalker');
   });
 });

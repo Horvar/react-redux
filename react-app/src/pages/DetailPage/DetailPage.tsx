@@ -29,6 +29,7 @@ const DetailPage = () => {
           `https://swapi.dev/api/people/${detailsId}`
         );
         const data = await response.json();
+        // Переместим setPerson в блок try
         setPerson(data);
       } catch (error) {
         console.error('Error fetching details:', error);

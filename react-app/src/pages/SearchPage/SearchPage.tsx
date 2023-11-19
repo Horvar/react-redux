@@ -32,8 +32,6 @@ const SearchPage: React.FC = () => {
   useEffect(() => {
     dispatch(setMainPageLoading(isLoading));
 
-    console.log(isLoading);
-
     const urlSearchTerm = searchParams.get('search') || '';
     const page = parseInt(searchParams.get('page') || '1', 10);
 
