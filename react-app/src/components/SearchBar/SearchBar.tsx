@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
 import styles from './SearchBar.module.css';
 
-import { useDispatch } from 'react-redux';
-import { setSearchTerm } from '../../features/search/searchSlice';
-
 type SearchBarProps = {
-  onSearch: (searchTerm: string, page: number) => void;
+  onSearch: (searchTerm: string) => void;
 };
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [localSearchTerm, setLocalSearchTerm] = useState(
-    localStorage.getItem('searchTerm') || ''
-  );
-  const dispatch = useDispatch();
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
 
   const handleSearch = () => {
     const trimmedSearchTerm = localSearchTerm.trim();
-    dispatch(setSearchTerm(trimmedSearchTerm));
-    localStorage.setItem('searchTerm', trimmedSearchTerm);
-    onSearch(trimmedSearchTerm, 1);
+    onSearch(trimmedSearchTerm);
   };
 
   return (
